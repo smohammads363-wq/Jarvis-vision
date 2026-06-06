@@ -1,0 +1,38 @@
+name: Compile ESP32-CAM
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install ESP32 Core
+        run: |
+          arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli core install esp32:esp32 --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+
+      - name: Install Libraries
+        run: |
+          arduino-cli lib install "U8g2"
+          arduino-cli lib install --zip-path library.zip
+
+      - name: Prepare Folder for Arduino
+        run: |
+          mkdir s
+          mv s.ino s/
+
+      - name: Compile Code
+        run: |
+          arduino-cli compile --fqbn esp32:esp32:esp32cam --export-binaries s/s.ino
+
+      - name: Upload Firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: Jarvis-Firmware-BIN
+          path: s/build/
