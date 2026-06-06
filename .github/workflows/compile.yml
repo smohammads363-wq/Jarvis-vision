@@ -20,16 +20,21 @@ jobs:
       - name: Install Libraries
         run: |
           arduino-cli lib install "U8g2"
-          arduino-cli lib install --zip-path library.zip
+          arduino-cli config set library.enable_unsafe_install true
+          mkdir -p ~/Arduino/libraries
+          unzip library.zip -d ~/Arduino/libraries/
 
-      - name: Prepare Folder for Arduino
+      - name: Prepare Sketch Folder
         run: |
-          mkdir s
-          mv s.ino s/
+          mkdir -p s
+          cp s.ino s/
 
       - name: Compile Code
         run: |
-          arduino-cli compile --fqbn esp32:esp32:esp32cam --export-binaries s/s.ino
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32cam \
+            --export-binaries \
+            s/
 
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
